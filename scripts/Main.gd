@@ -9,6 +9,8 @@ extends Control
 ##   QUESTS    — colony reports as quest board
 ##   RECEIPTS  — audit trail from receipts.jsonl / sprint logs
 ##   TD        — Terminal Depths game-heart state
+##   FLIGHT    — autonomous supervisor heartbeat and log tail
+##   STEER     — bounded cockpit actions / FCC smoke / route packets
 ##   ROUTE     — natural-language routing to intermediary / gsv
 
 const BRIDGE := "C:/GSV/tools/godot-cockpit/Invoke-GSVGodotBridge.ps1"
@@ -18,6 +20,8 @@ var _status_box: RichTextLabel
 var _status_bar: Label
 var _route_input: LineEdit
 var _route_output: RichTextLabel
+var _steer_output: RichTextLabel
+var _flight_output: RichTextLabel
 
 func _ready() -> void:
 	_build_ui()
@@ -65,6 +69,8 @@ func _build_ui() -> void:
 	_build_quest_tab()
 	_build_receipt_tab()
 	_build_td_tab()
+	_build_flight_tab()
+	_build_steer_tab()
 	_build_route_tab()
 
 func _build_status_tab() -> void:
@@ -81,7 +87,6 @@ func _build_status_tab() -> void:
 	_add_btn(btns, "🧹 Clear",    func(): _status_box.clear())
 
 	_status_box = RichTextLabel.new()
-	_status_box.use_bbcode = true
 	_status_box.scroll_following = true
 	_status_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(_status_box)
@@ -126,6 +131,54 @@ func _build_td_tab() -> void:
 	td.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(td)
 
+func _build_flight_tab() -> void:
+	var panel := VBoxContainer.new()
+	panel.name = "Flight"
+	panel.add_theme_constant_override("separation", 6)
+	_tabs.add_child(panel)
+
+	var info := Label.new()
+	info.text = "Autonomous supervisor heartbeat and log tail. Watch the colony work without losing the thread."
+	info.modulate = Color(0.7, 0.9, 1.0)
+	panel.add_child(info)
+
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 6)
+	panel.add_child(btns)
+
+	_add_btn(btns, "Refresh Flight", _refresh_flight)
+	_add_btn(btns, "Clear", func(): _flight_output.clear())
+
+	_flight_output = RichTextLabel.new()
+	_flight_output.scroll_following = true
+	_flight_output.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(_flight_output)
+
+func _build_steer_tab() -> void:
+	var panel := VBoxContainer.new()
+	panel.name = "Steer"
+	panel.add_theme_constant_override("separation", 6)
+	_tabs.add_child(panel)
+
+	var info := Label.new()
+	info.text = "Bounded actions: steering map, FCC smoke, cockpit memory. No long autonomous launch here."
+	info.modulate = Color(0.7, 0.9, 1.0)
+	panel.add_child(info)
+
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 6)
+	panel.add_child(btns)
+
+	_add_btn(btns, "Steering Map", _refresh_steering)
+	_add_btn(btns, "FCC Smoke", _fcc_smoke)
+	_add_btn(btns, "Memory Tail", _steer_memory)
+	_add_btn(btns, "Clear", func(): _steer_output.clear())
+
+	_steer_output = RichTextLabel.new()
+	_steer_output.scroll_following = true
+	_steer_output.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(_steer_output)
+
 func _build_route_tab() -> void:
 	var panel := VBoxContainer.new()
 	panel.name = "Route"
@@ -149,7 +202,6 @@ func _build_route_tab() -> void:
 	_add_btn(input_row, "Route ▶", func(): _do_route(_route_input.text))
 
 	_route_output = RichTextLabel.new()
-	_route_output.use_bbcode = true
 	_route_output.scroll_following = true
 	_route_output.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(_route_output)
@@ -189,6 +241,32 @@ func _do_route(obj: String = "") -> void:
 	var text := _bridge("route", obj)
 	_route_output.append_text("[color=green]=== ROUTE RESULT ===[/color]\n%s\n" % text)
 	_status_bar.text = "● routed"
+
+func _refresh_steering() -> void:
+	_status_bar.text = "● steering..."
+	var raw := _bridge("steer", "")
+	_append_steer("\n[color=cyan]=== STEERING MAP ===[/color]")
+	_append_steer(_parse_steer(raw))
+	_status_bar.text = "● steering ready"
+
+func _fcc_smoke() -> void:
+	_status_bar.text = "● FCC..."
+	var text := _bridge("fcc-smoke", "")
+	_append_steer("\n[color=yellow]=== FCC SMOKE ===[/color]")
+	_append_steer(text)
+	_status_bar.text = "● FCC done"
+
+func _steer_memory() -> void:
+	var text := _bridge("memory", "")
+	_append_steer("\n[color=green]=== COCKPIT MEMORY ===[/color]")
+	_append_steer(text)
+
+func _refresh_flight() -> void:
+	_status_bar.text = "● flight..."
+	var raw := _bridge("flight", "")
+	_append_flight("\n[color=cyan]=== AUTONOMOUS FLIGHT ===[/color]")
+	_append_flight(_parse_flight(raw))
+	_status_bar.text = "● flight read"
 
 # ── BRIDGE ────────────────────────────────────────────────────────────────────
 
@@ -244,6 +322,75 @@ func _parse_status(raw: String) -> String:
 			lines.append("  [color=gray]✗[/color] " + "  ".join(miss_names))
 	return "\n".join(lines)
 
+func _parse_steer(raw: String) -> String:
+	var json := JSON.new()
+	if json.parse(raw) != OK:
+		return raw
+	var d = json.get_data()
+	if typeof(d) != TYPE_DICTIONARY:
+		return raw
+
+	var lines: PackedStringArray = []
+	lines.append("ts: " + str(d.get("ts", "?")).substr(0, 19))
+	lines.append("next: " + str(d.get("next_best", "")))
+	lines.append("")
+	lines.append("lanes:")
+	var lanes = d.get("lanes", {})
+	if typeof(lanes) == TYPE_DICTIONARY:
+		for name in lanes.keys():
+			var lane = lanes[name]
+			if typeof(lane) == TYPE_DICTIONARY:
+				var up: bool = bool(lane.get("up", lane.get("found", false)))
+				var color: String = "green" if up else "red"
+				lines.append("  [color=%s]%s[/color] %s" % [color, "UP " if up else "MISS", str(name)])
+
+	lines.append("")
+	lines.append("recent reports:")
+	var reports = d.get("recent_reports", [])
+	if typeof(reports) == TYPE_ARRAY:
+		for report in reports.slice(0, 6):
+			if typeof(report) == TYPE_DICTIONARY:
+				lines.append("  " + str(report.get("name", "")))
+
+	return "\n".join(lines)
+
+func _parse_flight(raw: String) -> String:
+	var json := JSON.new()
+	if json.parse(raw) != OK:
+		return raw
+	var d = json.get_data()
+	if typeof(d) != TYPE_DICTIONARY:
+		return raw
+
+	var lines: PackedStringArray = []
+	if not bool(d.get("found", false)):
+		lines.append("[color=yellow]No autonomous flight run found.[/color]")
+		return "\n".join(lines)
+
+	lines.append("run: " + str(d.get("run", "")))
+	lines.append("running: " + ("yes" if bool(d.get("running", false)) else "no"))
+	var heartbeat = d.get("heartbeat", {})
+	if typeof(heartbeat) == TYPE_DICTIONARY:
+		lines.append("cycle: %s   phase: %s" % [str(heartbeat.get("cycle", "?")), str(heartbeat.get("phase", "?"))])
+		lines.append("heartbeat: " + str(heartbeat.get("heartbeat_at", "")).substr(0, 19))
+		lines.append("ends: " + str(heartbeat.get("ends_at", "")).substr(0, 19))
+	lines.append("")
+	lines.append("log tail:")
+	var tail = d.get("log_tail", [])
+	if typeof(tail) == TYPE_ARRAY:
+		for line in tail.slice(maxi(0, tail.size() - 24), tail.size()):
+			lines.append("  " + str(line))
+
+	return "\n".join(lines)
+
 func _append_status(text: String) -> void:
 	if _status_box:
 		_status_box.append_text(text + "\n")
+
+func _append_steer(text: String) -> void:
+	if _steer_output:
+		_steer_output.append_text(text + "\n")
+
+func _append_flight(text: String) -> void:
+	if _flight_output:
+		_flight_output.append_text(text + "\n")

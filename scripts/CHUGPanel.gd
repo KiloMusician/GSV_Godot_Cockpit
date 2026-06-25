@@ -1,4 +1,5 @@
 extends PanelContainer
+class_name CHUGPanel
 
 ## CHUGPanel — Continuous Harvest Update Generator telemetry.
 ## CHUG is the colony's autonomous improvement daemon (Terminal Depths :7337).
@@ -10,11 +11,6 @@ const DM_TRIGGER := "http://localhost:7337/api/chug/trigger"
 
 var _stats: RichTextLabel
 var _suggestions: VBoxContainer
-
-static func create() -> CHUGPanel:
-	var n := CHUGPanel.new()
-	n.name = "CHUGPanel"
-	return n
 
 func _ready() -> void:
 	var root := VBoxContainer.new()
@@ -44,7 +40,6 @@ func _ready() -> void:
 
 	# Stats area
 	_stats = RichTextLabel.new()
-	_stats.use_bbcode = true
 	_stats.fit_content = true
 	_stats.custom_minimum_size = Vector2(0, 80)
 	root.add_child(_stats)

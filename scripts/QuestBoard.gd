@@ -1,14 +1,10 @@
 extends PanelContainer
+class_name QuestBoard
 
 ## QuestBoard — Colony reports as active quests. Know what the ship is doing.
 
 const REPORTS_DIR := "C:/dev/active/Kilo_Core/state/cultivation/reports"
 const SPRINT_INDEX := "C:/GSV/state/autonomous-sprints"
-
-static func create() -> QuestBoard:
-	var n := QuestBoard.new()
-	n.name = "QuestBoard"
-	return n
 
 func _ready() -> void:
 	var root := VBoxContainer.new()

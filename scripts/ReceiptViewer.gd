@@ -1,4 +1,5 @@
 extends PanelContainer
+class_name ReceiptViewer
 
 ## ReceiptViewer — tails receipts.jsonl and live-sprint.log from the colony.
 ## Agents are nodes. Receipts are memory. This is the audit trail.
@@ -12,11 +13,6 @@ const SPRINT_INDEX := "C:/GSV/state/autonomous-sprints/current/latest.json"
 var _label: RichTextLabel
 var _refresh_btn: Button
 var _tail_lines: int = 30
-
-static func create() -> ReceiptViewer:
-	var n := ReceiptViewer.new()
-	n.name = "ReceiptViewer"
-	return n
 
 func _ready() -> void:
 	var root := VBoxContainer.new()
@@ -36,7 +32,6 @@ func _ready() -> void:
 	hdr.add_child(_refresh_btn)
 
 	_label = RichTextLabel.new()
-	_label.use_bbcode = true
 	_label.scroll_following = true
 	_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_label.custom_minimum_size = Vector2(0, 180)
@@ -86,7 +81,7 @@ func refresh() -> void:
 			fname = dir.get_next()
 			while fname != "":
 				if dir.current_is_dir() and fname != "." and fname != "..":
-					var sub := dir_path + "/" + fname + "/receipts/receipts.jsonl"
+					var sub: String = dir_path + "/" + fname + "/receipts/receipts.jsonl"
 					if FileAccess.file_exists(sub):
 						_read_jsonl(sub)
 						found_any = true

@@ -1,4 +1,5 @@
 extends PanelContainer
+class_name AgentMap
 
 ## AgentMap — Colony agents as nodes on a visual graph.
 ## Agents are crew. The map is the ship layout.
@@ -21,11 +22,6 @@ const CANVAS_SIZE := Vector2(400, 250)
 var _status: Dictionary = {}
 var _canvas: Control
 var _refresh_btn: Button
-
-static func create() -> AgentMap:
-	var n := AgentMap.new()
-	n.name = "AgentMap"
-	return n
 
 func _ready() -> void:
 	# Init all gray

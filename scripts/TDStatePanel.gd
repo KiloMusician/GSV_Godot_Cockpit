@@ -1,4 +1,5 @@
 extends PanelContainer
+class_name TDStatePanel
 
 ## TDStatePanel — Terminal Depths live state viewer.
 ## TD is the game-heart. This panel shows its pulse.
@@ -10,11 +11,6 @@ const TD_DEPTH_URL  := "http://localhost:7337/api/player/depth"
 
 var _label: RichTextLabel
 var _refresh_btn: Button
-
-static func create() -> TDStatePanel:
-	var n := TDStatePanel.new()
-	n.name = "TDStatePanel"
-	return n
 
 func _ready() -> void:
 	var root := VBoxContainer.new()
@@ -34,7 +30,6 @@ func _ready() -> void:
 	hdr.add_child(_refresh_btn)
 
 	_label = RichTextLabel.new()
-	_label.use_bbcode = true
 	_label.scroll_following = true
 	_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_label.custom_minimum_size = Vector2(0, 160)
