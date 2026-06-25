@@ -1,0 +1,13 @@
+63f7b34db8d8cdea90c76aacccf841ec
+::res://::1782385951
+README_GSV_COCKPIT.md::TextFile::-1::1782385490::0::1::::<><><>0<>0<><>::
+::res://addons/::1782385380
+::res://scenes/::1782385426
+Main.tscn::PackedScene::-1::1782385426::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
+::res://scripts/::1782386470
+AgentMap.gd::GDScript::3412687966948223798::1782386137::0::1::::<>PanelContainer<><>0<>0<><>::
+CHUGPanel.gd::GDScript::5159068199616145122::1782386451::0::1::::<>PanelContainer<><>0<>0<><>::
+Main.gd::GDScript::604255152798314127::1782386470::0::1::::<>Control<><>0<>0<><>::
+QuestBoard.gd::GDScript::6862504411523991045::1782386420::0::1::::<>PanelContainer<><>0<>0<><>::
+ReceiptViewer.gd::GDScript::4320372342951837605::1782385836::0::1::::<>PanelContainer<><>0<>0<><>::
+TDStatePanel.gd::GDScript::6527288364497868989::1782385858::0::1::::<>PanelContainer<><>0<>0<><>::
