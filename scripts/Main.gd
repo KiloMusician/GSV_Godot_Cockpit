@@ -64,6 +64,7 @@ func _build_ui() -> void:
 	root.add_child(_tabs)
 
 	_build_status_tab()
+	_build_models_tab()
 	_build_agent_tab()
 	_build_chug_tab()
 	_build_quest_tab()
@@ -90,6 +91,14 @@ func _build_status_tab() -> void:
 	_status_box.scroll_following = true
 	_status_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(_status_box)
+
+func _build_models_tab() -> void:
+	var panel := VBoxContainer.new()
+	panel.name = "Models"
+	_tabs.add_child(panel)
+	var models = _gsv_create_model_status_panel()
+	models.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(models)
 
 func _build_chug_tab() -> void:
 	var panel := VBoxContainer.new()
@@ -394,3 +403,7 @@ func _append_steer(text: String) -> void:
 func _append_flight(text: String) -> void:
 	if _flight_output:
 		_flight_output.append_text(text + "\n")
+
+
+func _gsv_create_model_status_panel() -> Control:
+	return load("res://scripts/ModelStatusPanel.gd").new()
