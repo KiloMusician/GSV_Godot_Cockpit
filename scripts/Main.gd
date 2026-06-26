@@ -65,6 +65,7 @@ func _build_ui() -> void:
 
 	_build_status_tab()
 	_build_events_tab()
+	_build_dispatch_tab()
 	_build_models_tab()
 	_build_agent_tab()
 	_build_chug_tab()
@@ -100,6 +101,14 @@ func _build_events_tab() -> void:
 	var stream = load("res://scripts/EventStream.gd").new()
 	stream.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(stream)
+
+func _build_dispatch_tab() -> void:
+	var panel := VBoxContainer.new()
+	panel.name = "Dispatch"
+	_tabs.add_child(panel)
+	var q = load("res://scripts/DispatchQueuePanel.gd").new()
+	q.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(q)
 
 func _build_models_tab() -> void:
 	var panel := VBoxContainer.new()
