@@ -65,6 +65,7 @@ func _build_ui() -> void:
 
 	_build_status_tab()
 	_build_events_tab()
+	_build_gitlog_tab()
 	_build_dispatch_tab()
 	_build_models_tab()
 	_build_agent_tab()
@@ -101,6 +102,14 @@ func _build_events_tab() -> void:
 	var stream = load("res://scripts/EventStream.gd").new()
 	stream.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(stream)
+
+func _build_gitlog_tab() -> void:
+	var panel := VBoxContainer.new()
+	panel.name = "Git Log"
+	_tabs.add_child(panel)
+	var gl = load("res://scripts/GitLogPanel.gd").new()
+	gl.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(gl)
 
 func _build_dispatch_tab() -> void:
 	var panel := VBoxContainer.new()
