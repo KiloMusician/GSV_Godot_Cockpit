@@ -64,6 +64,7 @@ func _build_ui() -> void:
 	root.add_child(_tabs)
 
 	_build_status_tab()
+	_build_events_tab()
 	_build_models_tab()
 	_build_agent_tab()
 	_build_chug_tab()
@@ -91,6 +92,14 @@ func _build_status_tab() -> void:
 	_status_box.scroll_following = true
 	_status_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(_status_box)
+
+func _build_events_tab() -> void:
+	var panel := VBoxContainer.new()
+	panel.name = "Events"
+	_tabs.add_child(panel)
+	var stream = load("res://scripts/EventStream.gd").new()
+	stream.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(stream)
 
 func _build_models_tab() -> void:
 	var panel := VBoxContainer.new()
