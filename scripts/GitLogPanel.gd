@@ -47,7 +47,7 @@ func _ready() -> void:
 	hdr.add_child(refresh_btn)
 
 	_box = RichTextLabel.new()
-	_box.use_bbcode = true
+	_box.bbcode_enabled = true
 	_box.scroll_following = false
 	_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(_box)

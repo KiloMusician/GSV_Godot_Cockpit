@@ -49,7 +49,7 @@ func _ready() -> void:
 
 	# Event box
 	_box = RichTextLabel.new()
-	_box.use_bbcode = true
+	_box.bbcode_enabled = true
 	_box.scroll_following = true
 	_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(_box)
@@ -87,7 +87,7 @@ func _full_reload() -> void:
 	_last_size = f.get_length()
 	f.close()
 	# Show tail
-	var start := max(0, lines.size() - MAX_LINES)
+	var start := maxi(0, lines.size() - MAX_LINES)
 	for i in range(start, lines.size()):
 		_append_event(lines[i])
 

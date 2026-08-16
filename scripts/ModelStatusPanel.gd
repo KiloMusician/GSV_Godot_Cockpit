@@ -33,7 +33,7 @@ func _ready() -> void:
 	btns.add_child(fcc_note)
 
 	_output = RichTextLabel.new()
-	_output.use_bbcode = true
+	_output.bbcode_enabled = true
 	_output.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_output.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_output.scroll_following = false
